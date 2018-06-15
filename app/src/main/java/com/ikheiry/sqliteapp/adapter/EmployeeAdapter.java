@@ -4,35 +4,32 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.ikheiry.sqliteapp.R;
+import com.ikheiry.sqliteapp.db.DataBaseManager;
 import com.ikheiry.sqliteapp.model.Employee;
 
 import java.util.List;
 
 public class EmployeeAdapter extends ArrayAdapter<Employee> {
 
-    Context context;
-    int layoutRes;
-    List<Employee> employees;
-    SQLiteDatabase mdatabase;
+    private Context context;
+    private List<Employee> employees;
+    private  DataBaseManager mdatabase;
 
-    public EmployeeAdapter(@NonNull Context context, int resource, List<Employee> employees, SQLiteDatabase mdatabase) {
+    public EmployeeAdapter(@NonNull Context context, int resource, List<Employee> employees, DataBaseManager mdatabase) {
         super(context, resource, employees);
         this.context = context;
-        this.layoutRes = resource;
         this.employees = employees;
         this.mdatabase = mdatabase;
     }
@@ -52,7 +49,7 @@ public class EmployeeAdapter extends ArrayAdapter<Employee> {
 
         textViewName.setText(employee.getName());
         textViewDept.setText(employee.getDept());
-        textViewSal.setText(""+employee.getSalary());
+        textViewSal.setText(String.valueOf(employee.getSalary()));
         textViewDate.setText(employee.getDate());
 
         // Events
@@ -80,8 +77,7 @@ public class EmployeeAdapter extends ArrayAdapter<Employee> {
         aBuilder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                String sql = "DELETE FROM employees WHERE id = ?;";
-                mdatabase.execSQL(sql, new Integer[]{employee.getId()});
+                mdatabase.deleteEmployee(employee.getId());
                 ReloadEmployeesFromDataBase();
             }
         });
@@ -113,7 +109,7 @@ public class EmployeeAdapter extends ArrayAdapter<Employee> {
         final Spinner spinner = view.findViewById(R.id.spinnerDepartment);
 
         editTextName.setText(employee.getName());
-        editTextSal.setText(""+employee.getSalary());
+        editTextSal.setText(String.valueOf(employee.getSalary()));
 
         view.findViewById(R.id.buttonUpdateEmployee).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -134,19 +130,10 @@ public class EmployeeAdapter extends ArrayAdapter<Employee> {
                     return;
                 }
 
-                String sql = "UPDATE employees \n" +
-                        "SET name = ?, \n" +
-                        "department = ?, \n" +
-                        "salary = ? \n" +
-                        "WHERE id = ?;\n";
-
-                mdatabase.execSQL(sql, new String[]{
-                        name,
-                        departement,
-                        salary,
-                        String.valueOf(employee.getId())
-                });
-                Toast.makeText(context, "Employee updated", Toast.LENGTH_LONG).show();
+                if(mdatabase.updateEmployee(employee.getId(),name, departement, Double.parseDouble(salary)))
+                    Toast.makeText(context, "Employee updated", Toast.LENGTH_LONG).show();
+                else
+                    Toast.makeText(context, "Employee not updated", Toast.LENGTH_LONG).show();
 
                 ReloadEmployeesFromDataBase();
                 dialog.dismiss();
@@ -155,8 +142,7 @@ public class EmployeeAdapter extends ArrayAdapter<Employee> {
     }
 
     private void ReloadEmployeesFromDataBase() {
-        String sql = "SELECT * FROM employees;";
-        Cursor cursor = mdatabase.rawQuery(sql, null);
+        Cursor cursor = mdatabase.getAllEmployess();
 
         if(cursor.moveToFirst()) {
             employees.clear();

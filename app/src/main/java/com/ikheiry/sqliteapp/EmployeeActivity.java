@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.widget.ListView;
 
 import com.ikheiry.sqliteapp.adapter.EmployeeAdapter;
+import com.ikheiry.sqliteapp.db.DataBaseManager;
 import com.ikheiry.sqliteapp.model.Employee;
 
 import java.util.ArrayList;
@@ -14,7 +15,7 @@ import java.util.List;
 
 public class EmployeeActivity extends AppCompatActivity {
 
-    private SQLiteDatabase mdatabase;
+    private DataBaseManager mdatabase;
     private List<Employee> employees;
     ListView listView;
 
@@ -26,15 +27,14 @@ public class EmployeeActivity extends AppCompatActivity {
         listView = findViewById(R.id.employees_list);
         employees = new ArrayList<>();
 
-        // create or open database
-        mdatabase = openOrCreateDatabase(MainActivity.DATABASE_NAME_NAME, MODE_PRIVATE, null);
+        // create database manager instance
+        mdatabase = new DataBaseManager(this);
 
         loadEmployeesFromDatabase();
     }
 
     private void loadEmployeesFromDatabase(){
-        String sql = "SELECT * FROM employees;";
-        Cursor cursor = mdatabase.rawQuery(sql, null);
+        Cursor cursor = mdatabase.getAllEmployess();
 
         if(cursor.moveToFirst()){
             do {
