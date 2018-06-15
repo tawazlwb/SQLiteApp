@@ -1,5 +1,6 @@
 package com.ikheiry.sqliteapp;
 
+import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -56,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
         String nameVal = name.getText().toString();
         String salaryVal = salary.getText().toString();
         String dept = spinner.getSelectedItem().toString();
+
         if(nameVal.isEmpty()){
             name.setError("Name can't be empty");
             name.requestFocus();
@@ -84,5 +86,10 @@ public class MainActivity extends AppCompatActivity {
 
         // diplay Toast
         Toast.makeText(this, "Employee added", Toast.LENGTH_LONG).show();
+    }
+
+    public void showEmployees(View view) {
+        Intent intent = new Intent(MainActivity.this, EmployeeActivity.class);
+        startActivity(intent);
     }
 }
